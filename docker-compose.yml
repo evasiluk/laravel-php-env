@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - 8080:80 
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/config:/etc/nginx/conf.d
+  php:
+    build: ./php
+    volumes:
+      - ./src:/var/www/html
+      - ./php/config:/usr/local/etc/php/
+    working_dir: /var/www/html
+  db:
+    image: mysql:8.0.27
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./database:/var/lib/mysql 
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8081:80
+    environment:
+      - PMA_HOST=db
+  redis:
+    image: redis
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+  phpredisadmin:
+    image: erikdubbelboer/phpredisadmin
+    environment:
+      - ADMIN_USER=admin
+      - ADMIN_PASS=admin
+      - REDIS_1_HOST=redis
+      - REDIS_1_PORT=6379
+    ports:
+      - "8082:80"
